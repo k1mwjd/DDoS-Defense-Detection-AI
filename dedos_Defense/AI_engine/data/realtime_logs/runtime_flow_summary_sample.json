@@ -1,0 +1,6 @@
+{
+  "row_count": 7065,
+  "attack_predictions": 2518,
+  "benign_predictions": 4547,
+  "mean_attack_probability": 0.3635504647860017
+}

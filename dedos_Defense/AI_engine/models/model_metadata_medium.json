@@ -1,0 +1,43 @@
+{
+  "feature_columns": [
+    "destination_port",
+    "protocol",
+    "flow_duration",
+    "total_fwd_packets",
+    "total_backward_packets",
+    "total_length_fwd_packets",
+    "total_length_bwd_packets",
+    "flow_bytes_per_s",
+    "flow_packets_per_s",
+    "fwd_packets_per_s",
+    "bwd_packets_per_s",
+    "min_packet_length",
+    "max_packet_length",
+    "packet_length_mean",
+    "packet_length_std",
+    "syn_flag_count",
+    "rst_flag_count",
+    "ack_flag_count",
+    "average_packet_size",
+    "down_up_ratio"
+  ],
+  "label_column": "label",
+  "row_count": 44892,
+  "train_row_count": 27392,
+  "test_row_count": 17500,
+  "metrics": {
+    "precision": 0.9898562358607604,
+    "recall": 0.9688571428571429,
+    "f1_score": 0.979244125184998,
+    "confusion_matrix": [
+      [
+        3361,
+        139
+      ],
+      [
+        436,
+        13564
+      ]
+    ]
+  }
+}

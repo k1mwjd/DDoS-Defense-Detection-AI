@@ -1,0 +1,81 @@
+{
+  "input_dir": "..\\data\\csv\\01-12",
+  "output_csv": "data\\processed\\train_dataset_medium.csv",
+  "feature_columns": [
+    "destination_port",
+    "protocol",
+    "flow_duration",
+    "total_fwd_packets",
+    "total_backward_packets",
+    "total_length_fwd_packets",
+    "total_length_bwd_packets",
+    "flow_bytes_per_s",
+    "flow_packets_per_s",
+    "fwd_packets_per_s",
+    "bwd_packets_per_s",
+    "min_packet_length",
+    "max_packet_length",
+    "packet_length_mean",
+    "packet_length_std",
+    "syn_flag_count",
+    "rst_flag_count",
+    "ack_flag_count",
+    "average_packet_size",
+    "down_up_ratio"
+  ],
+  "label_column": "label",
+  "row_count": 27392,
+  "label_distribution": {
+    "0": 5392,
+    "1": 22000
+  },
+  "file_stats": {
+    "DrDoS_DNS.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_LDAP.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_MSSQL.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_NetBIOS.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_NTP.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_SNMP.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_SSDP.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "DrDoS_UDP.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "Syn.csv": {
+      "benign_rows": 392,
+      "attack_rows": 2000
+    },
+    "TFTP.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    },
+    "UDPLag.csv": {
+      "benign_rows": 500,
+      "attack_rows": 2000
+    }
+  },
+  "max_benign_rows_per_file": 500,
+  "max_attack_rows_per_file": 2000,
+  "chunk_size": 50000
+}
