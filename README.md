@@ -42,7 +42,6 @@ AI-DDos-Detection
         ├── firewall           # Firewall-related extension modules
         ├── models             # Training and prediction code
         └── utils              # Shared configuration and helper code
->>>>>>> b7ed332 (Folder Rename)
 ```
 
 
