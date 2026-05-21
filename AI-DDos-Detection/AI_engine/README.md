@@ -83,6 +83,40 @@ AI DDos Detection
 - `src/api/main.py`: FastAPI 백엔드 진입점
 - `src/utils/config.py`: 공통 경로 및 feature 설정
 
+## 백엔드 구조
+
+요청 처리 흐름은 다음과 같다.
+
+```
+POST /predict
+  └─ ModelInferenceService.predict_from_feature_dict()
+       └─ Random Forest 모델 추론 → prediction, attack_probability 반환
+  └─ DefenseManager.evaluate()
+       └─ risk_score 계산 → risk_level 분류 → 차단 여부 결정
+```
+
+### 위험도 분류 기준
+
+`attack_probability`를 0~100 점수로 변환한 뒤 아래 기준으로 분류한다.
+
+| risk_level | risk_score 범위 |
+|------------|----------------|
+| low        | 0 ~ 39         |
+| medium     | 40 ~ 69        |
+| high       | 70 ~ 89        |
+| critical   | 90 ~ 100       |
+
+`prediction == 1`이고 `risk_score >= threshold`인 경우에만 차단이 실행된다.
+
+### 환경 변수
+
+| 변수명                          | 기본값                              | 설명                              |
+|---------------------------------|-------------------------------------|-----------------------------------|
+| `AI_DDOS_MODEL_PATH`            | `models/random_forest_medium.joblib` | 모델 파일 경로                    |
+| `AI_DDOS_DEFENSE_THRESHOLD`     | `70.0`                              | 차단 실행 최소 risk_score         |
+| `AI_DDOS_BLOCK_SECONDS`         | `600`                               | 차단 유지 시간(초)                |
+| `AI_DDOS_ENABLE_WINDOWS_FIREWALL` | `false`                           | Windows 방화벽 규칙 자동 적용 여부 |
+
 ## 학습 파이프라인
 ### 1. 학습 데이터셋 생성
 ```powershell
