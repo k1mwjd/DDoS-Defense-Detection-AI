@@ -31,19 +31,29 @@
 ## Directory layout
 
 ```text
-AI DDos Detection
-├── data
-│   ├── raw
-│   ├── processed
-│   └── realtime_logs
-├── docs
-├── models
-└── src
-    ├── features
-    ├── models
-    ├── firewall
-    ├── api
-    └── utils
+AI-DDos-Detection
+├── AI_engine
+│   ├── data
+│   │   ├── raw
+│   │   ├── processed
+│   │   └── realtime_logs
+│   ├── docs
+│   ├── models
+│   └── src
+│       ├── features
+│       ├── models
+│       └── utils
+└── Backend
+    ├── app
+    │   ├── main.py
+    │   ├── config.py
+    │   ├── schemas.py
+    │   └── services
+    │       ├── inference.py
+    │       ├── defense.py
+    │       └── flow_analysis.py
+    ├── requirements.txt
+    └── runtime_logs
 ```
 
 ## 데이터 사용 방식
