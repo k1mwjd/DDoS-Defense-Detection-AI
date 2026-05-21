@@ -84,36 +84,6 @@ AI-DDos-Detection
 - `average_packet_size`
 - `down_up_ratio`
 
-## 핵심 파일
-- `src/features/prepare_cic_csv_dataset.py`: CIC 원본 CSV 전처리 및 학습용 데이터셋 생성
-- `src/models/train_model.py`: Random Forest 모델 학습 및 성능 평가
-- `src/models/predict_flow.py`: 저장된 모델을 이용한 CSV 기반 예측
-- `src/models/inference_service.py`: 저장된 모델 로딩 및 공통 추론 처리
-- `src/firewall/defense.py`: 위험도 계산 및 차단 판단 로직
-- `src/api/main.py`: FastAPI 백엔드 진입점
-- `src/utils/config.py`: 공통 경로 및 feature 설정
-
-## 백엔드 구조
-
-구현된 엔드포인트는 다음과 같다.
-
-- `/health`: 서버 상태, 모델 경로, 필수 feature 개수 확인
-- `/predict`: feature 20개를 입력받아 예측 수행
-- `/analyze/pcap`: PCAP 파일을 직접 읽어 flow 생성 후 자동 분석
-- `/analyze/live`: 네트워크 인터페이스에서 일정 시간 패킷을 수집해 자동 분석
-- `/blocked-sources`: 현재 차단 목록 조회
-- `/blocked-sources/{source_ip}`: 특정 IP 차단 해제
-
-내부 동작 흐름은 다음과 같다.
-
-```
-패킷 수집 또는 PCAP 읽기
-  → 양방향 flow 구성
-  → 학습에 사용한 20개 feature 계산
-  → 저장된 Random Forest 모델로 추론
-  → 공격 확률 기반 위험도 계산
-  → 임계치 초과 시 차단 판단 및 선택적으로 Windows 방화벽 규칙 적용
-```
 
 ### 위험도 분류 기준
 
@@ -128,14 +98,6 @@ AI-DDos-Detection
 
 `prediction == 1`이고 `risk_score >= threshold`인 경우에만 차단이 실행된다.
 
-### 환경 변수
-
-| 변수명                          | 기본값                              | 설명                              |
-|---------------------------------|-------------------------------------|-----------------------------------|
-| `AI_DDOS_MODEL_PATH`            | `models/random_forest_medium.joblib` | 모델 파일 경로                    |
-| `AI_DDOS_DEFENSE_THRESHOLD`     | `70.0`                              | 차단 실행 최소 risk_score         |
-| `AI_DDOS_BLOCK_SECONDS`         | `600`                               | 차단 유지 시간(초)                |
-| `AI_DDOS_ENABLE_WINDOWS_FIREWALL` | `false`                           | Windows 방화벽 규칙 자동 적용 여부 |
 
 ## 학습 파이프라인
 ### 1. 학습 데이터셋 생성
@@ -275,12 +237,6 @@ Invoke-RestMethod `
   -Uri "http://127.0.0.1:8000/blocked-sources/192.168.0.10" `
   -Method Delete
 ```
-
-## 주의사항
-- `analyze/live`를 사용하려면 Windows 환경에 `Npcap` 또는 호환 가능한 패킷 캡처 드라이버가 필요하다.
-- Windows 방화벽 규칙 적용은 관리자 권한으로 실행하는 것이 안전하다.
-- Backend는 `AI_engine/models/random_forest_medium.joblib`를 기본 모델 경로로 참조한다.
-- 분석 결과 CSV와 JSON 로그는 `Backend/runtime_logs`에 저장된다.
 
 ## 현재 결과
 - train rows: `27392`
