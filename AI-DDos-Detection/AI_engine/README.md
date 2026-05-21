@@ -95,14 +95,24 @@ AI-DDos-Detection
 
 ## 백엔드 구조
 
-요청 처리 흐름은 다음과 같다.
+구현된 엔드포인트는 다음과 같다.
+
+- `/health`: 서버 상태, 모델 경로, 필수 feature 개수 확인
+- `/predict`: feature 20개를 입력받아 예측 수행
+- `/analyze/pcap`: PCAP 파일을 직접 읽어 flow 생성 후 자동 분석
+- `/analyze/live`: 네트워크 인터페이스에서 일정 시간 패킷을 수집해 자동 분석
+- `/blocked-sources`: 현재 차단 목록 조회
+- `/blocked-sources/{source_ip}`: 특정 IP 차단 해제
+
+내부 동작 흐름은 다음과 같다.
 
 ```
-POST /predict
-  └─ ModelInferenceService.predict_from_feature_dict()
-       └─ Random Forest 모델 추론 → prediction, attack_probability 반환
-  └─ DefenseManager.evaluate()
-       └─ risk_score 계산 → risk_level 분류 → 차단 여부 결정
+패킷 수집 또는 PCAP 읽기
+  → 양방향 flow 구성
+  → 학습에 사용한 20개 feature 계산
+  → 저장된 Random Forest 모델로 추론
+  → 공격 확률 기반 위험도 계산
+  → 임계치 초과 시 차단 판단 및 선택적으로 Windows 방화벽 규칙 적용
 ```
 
 ### 위험도 분류 기준
@@ -161,17 +171,35 @@ POST /predict
 ```
 
 ## 백엔드 실행 및 테스트
-### 1. FastAPI 서버 실행
+### 1. Backend 폴더 이동 및 가상환경 생성
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+cd "AI-DDos-Detection\Backend"
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process Bypass
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
-### 2. 상태 확인
+### 2. FastAPI 서버 실행
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 3. Windows 방화벽 차단까지 함께 사용할 경우
+```powershell
+$env:AI_DDOS_ENABLE_WINDOWS_FIREWALL="true"
+$env:AI_DDOS_DEFENSE_THRESHOLD="70"
+$env:AI_DDOS_BLOCK_SECONDS="600"
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### 4. 상태 확인
 ```powershell
 Invoke-WebRequest http://127.0.0.1:8000/health
 ```
 
-### 3. 예측 API 테스트
+### 5. 예측 API 테스트
 ```powershell
 $body = @{
   source_ip = "192.168.0.10"
@@ -206,17 +234,53 @@ Invoke-RestMethod `
   -ContentType "application/json"
 ```
 
-### 4. 차단 목록 조회
+### 6. PCAP 자동 분석 테스트
+```powershell
+$body = @{
+  pcap_path = "C:\path\to\sample.pcap"
+  apply_defense = $false
+  packet_limit = 50000
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://127.0.0.1:8000/analyze/pcap" `
+  -Method Post `
+  -Body $body `
+  -ContentType "application/json"
+```
+
+### 7. 실시간 패킷 분석 테스트
+```powershell
+$body = @{
+  interface = "Ethernet"
+  duration_seconds = 10
+  apply_defense = $false
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://127.0.0.1:8000/analyze/live" `
+  -Method Post `
+  -Body $body `
+  -ContentType "application/json"
+```
+
+### 8. 차단 목록 조회
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8000/blocked-sources
 ```
 
-### 5. 특정 IP 차단 해제
+### 9. 특정 IP 차단 해제
 ```powershell
 Invoke-RestMethod `
   -Uri "http://127.0.0.1:8000/blocked-sources/192.168.0.10" `
   -Method Delete
 ```
+
+## 주의사항
+- `analyze/live`를 사용하려면 Windows 환경에 `Npcap` 또는 호환 가능한 패킷 캡처 드라이버가 필요하다.
+- Windows 방화벽 규칙 적용은 관리자 권한으로 실행하는 것이 안전하다.
+- Backend는 `AI_engine/models/random_forest_medium.joblib`를 기본 모델 경로로 참조한다.
+- 분석 결과 CSV와 JSON 로그는 `Backend/runtime_logs`에 저장된다.
 
 ## 현재 결과
 - train rows: `27392`
